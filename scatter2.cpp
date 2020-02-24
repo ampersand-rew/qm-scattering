@@ -17,14 +17,7 @@
 
 using namespace std;
 
-const double hbar = 1.054571817e-34; //reduced planck's constant, J*s
-const double m = 9.1093837015e-31; //electron mass, kg
-const double q = 1.602176634e-19; //elementary charge, Coulombs
-const double eV = q; //Electronvolt, J
-const double MeV = 1e6 * eV; //Mega Electron Volt, J
-const double meV = 1e-3 * eV; //Milli Electron Volt, J
-const double rB = 5.29e-11; //Bohr radius, meters
-const double A = 1e-10; //Angstrom, meters
+int mode = 1;
 
 const double epsilon = 5.9; //epsilon = 5.9 meV
 const double rho = 3.57; //ro = 3.57 angstrom
@@ -40,7 +33,7 @@ double FHO(int l, double r, double E) {
 
 //Leonard-Jones potential.
 double VLJ(double r) {
-  return epsilon*( TMath::Power((rho/r),12) - 2*TMath::Power((rho/r),6) );
+  return epsilon*( TMath::Power((1/r),12) - 2*TMath::Power((1/r),6) );
 }
 
 //Leonard-Jones effective potential.
@@ -85,6 +78,8 @@ void Numerov(double h, const vector<double> &fvals,
     traj[i + ih] = psi;
   }
 }
+
+
 
 //Approximation of u(r), the radial wavefunction, for small r
 double u_small(double r) {
@@ -160,10 +155,12 @@ int main(int argc, char ** argv) {
       //-------The following code calculates sigma_l---------
       double k = TMath::Sqrt(alpha) * TMath::Sqrt(E);
       double lam = 2*TMath::Pi() / k;
-      
+      //cout << "lam = " << lam << endl;
+      //cout << "lam/h = " << lam/h << endl;
       int index2 = nsteps-1;
-      //int index_difference = (int)(k*h);
-      int index_difference = 1;
+      //int index_difference = (int)(lam/h);
+      //cout << "index diff = " << index_difference << endl;
+      int index_difference = 10;
       //cout << "index diff " << index_difference << endl;
       int index1 = index2 - index_difference;
 
@@ -205,7 +202,7 @@ int main(int argc, char ** argv) {
     cross_sections[e] = sig_tot;
   }
   TGraph *cs = new TGraph(Esteps, E_vals, cross_sections);
-  
+  cs->SetTitle("Cross section as a function of Energy;Energy (meV);Total cross section [p^2]");
   /*
   double u[nsteps];
   double x[nsteps];
@@ -215,9 +212,10 @@ int main(int argc, char ** argv) {
   }
   TGraph *cs = new TGraph(nsteps,x,u);
   */
+  
   cs->Draw();
-
-
+  
+  
   /*
   TGraph *tgTraj = new TGraph();
   for (int i = 0; i <= nsteps; i++) {
@@ -234,4 +232,5 @@ int main(int argc, char ** argv) {
   theApp.SetIdleTimer(300,".q");  // set up a failsafe timer to end the program  
   theApp.Run();
   //-------------------------------------------------------------------
+ 
 }
